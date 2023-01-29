@@ -4,6 +4,7 @@ from app import db
 
 class Workout(db.Model):
   workout_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+  workout_plan = db.Column(db.JSON, nullable=False)
   training = db.relationship("Exercise", secondary="workouts_exercises", backref='practice')
 
 
