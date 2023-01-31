@@ -3,9 +3,9 @@ import pytest
 from app import create_app
 from app import db
 
-from app.models.Exercise import Exercise
-from app.models.Workout import Workout
-from app.models.User import User
+from app.models.exercise import Exercise
+from app.models.workout import Workout
+from app.models.user import User
 
 
 @pytest.fixture
