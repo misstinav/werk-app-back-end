@@ -30,6 +30,8 @@ def create_app(test_config=None):
   migrate.init_app(app, db)
   
   #register blueprints
+  from .exercise_routes import exercises_bp
+  app.register_blueprint(exercises_bp)
 
   CORS(app)
   return app
