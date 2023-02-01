@@ -3,8 +3,8 @@ import pytest
 from app import create_app
 from app import db
 
-from app.models.exercise import Exercise
-from app.models.workout import Workout
+# from app.models.exercise import Exercise
+from app.models.workout_exercise import Workout
 from app.models.user import User
 
 

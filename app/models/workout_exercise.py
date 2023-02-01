@@ -1,5 +1,7 @@
 # https://www.youtube.com/results?search_query=many+to+many+relationships+python
 
+# https://www.rithmschool.com/courses/intermediate-flask/many-to-many-and-complex-associations
+
 from app import db
 
 WorkoutExercises = db.Table('workout_exercises',
