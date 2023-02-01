@@ -21,11 +21,11 @@ def create_app(test_config=None):
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_TEST_DATABASE_URI")
 
   #models imported for alembic setup
-  from models.exercise import Exercise
-  from models.user import User
-  from models.workout import Workout
-  from models.user_workouts import UserWorkouts
-  from models.workouts_exercises import WorkoutExercises
+  from app.models.exercise import Exercise
+  from app.models.user import User
+  from app.models.workout import Workout
+  from app.models.user_workouts import UserWorkouts
+  from app.models.workouts_exercises import WorkoutExercises
 
   db.init_app(app)
   migrate.init_app(app, db)
