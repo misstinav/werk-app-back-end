@@ -3,7 +3,6 @@
 from app import db
 
 WorkoutExercises = db.Table('workout_exercises',
-  # db.Column('id', db.Integer, primary_key=True),
   db.Column('workout_id', db.Integer, db.ForeignKey('workout.workout_id')),
   db.Column('exercise_id', db.Integer, db.ForeignKey('exercise.exercise_id'))
 )
@@ -12,12 +11,12 @@ WorkoutExercises = db.Table('workout_exercises',
 class Workout(db.Model):
   workout_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   workout_plan = db.Column(db.JSON, nullable=False)
-  training = db.relationship("Exercise", secondary="WorkoutExercises", backref='practice')
+  training = db.relationship("Exercise", secondary="workout_exercises", backref='practice')
 
 
   #method where user puts in weight info per exercise
-  def log_exercise_weight(self):
-    pass
+  # def log_exercise_weight(self):
+  #   pass
 
 
 

@@ -1,7 +1,7 @@
 import requests
 import os
 from flask import Blueprint, jsonify, make_response, abort
-from app.models.exercise import Exercise
+from app.models.workout_exercise import Exercise
 
 # path = 'https://api.api-ninjas.com/v1/exercises'
 # query_params = {
