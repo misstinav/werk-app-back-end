@@ -13,18 +13,21 @@ WorkoutExercises = db.Table('workout_exercises',
 class Workout(db.Model):
   workout_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   workout_plan = db.Column(db.JSON, nullable=False)
+  is_saved = db.Column(db.Boolean, nullable=True)
   training = db.relationship("Exercise", secondary="workout_exercises", backref='practice')
 
 
-  #method where user puts in weight info per exercise
-  # def log_exercise_weight(self):
-  #   pass
 
 
 
 class Exercise(db.Model):
   exercise_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   name = db.Column(db.String, nullable=False)
-  muscle = db.Column(db.String)
-  equipment = db.Column(db.String)
-  directions = db.Column(db.Text)
+  muscle = db.Column(db.String, nullable=False)
+  equipment = db.Column(db.String, nullable=False)
+  directions = db.Column(db.Text, nullable=False)
+
+
+  #method where user puts in weight info per exercise
+  # def log_exercise_weight(self):
+  #   pass
