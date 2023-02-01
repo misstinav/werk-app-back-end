@@ -37,6 +37,6 @@ def read_all_exercises():
   
   return jsonify(exercise_api_response)       
 
-@exercises_bp.route("", methods=["POST"])
-def create_exercise():
-  pass
+# @exercises_bp.route("", methods=["POST"])
+# def create_exercise():
+#   pass
