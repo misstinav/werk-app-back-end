@@ -24,6 +24,9 @@ def create_app(test_config=None):
   from app.models.workout_exercise import WorkoutExercises
   from app.models.workout_exercise import Workout
   from app.models.workout_exercise import Exercise
+  
+  from app.models.user_workouts import UserWorkouts
+  from app.models.user_workouts import User
 
 
   # from app.models.workouts_exercises import WorkoutExercises
@@ -38,6 +41,9 @@ def create_app(test_config=None):
   #register blueprints
   from .exercise_routes import exercises_bp
   app.register_blueprint(exercises_bp)
+
+  from .workout_routes import workout_bp
+  app.register_blueprint(workout_bp)
 
   CORS(app)
   return app

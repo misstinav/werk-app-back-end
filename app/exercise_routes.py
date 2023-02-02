@@ -20,7 +20,7 @@ from app import db
 
 exercises_bp = Blueprint("exercises_bp", __name__, url_prefix="/exercises")
 
-def verify_exercise_exists(exercise_id):
+def verify_id_exists(exercise_id):
   try:
     type(exercise_id) == int
   except:
@@ -53,7 +53,7 @@ def read_all_exercises():
 
 @exercises_bp.route("/<exercise_id>", methods=["GET"])
 def read_one_exercise(exercise_id):
-  exercise = verify_exercise_exists(exercise_id)
+  exercise = verify_id_exists(exercise_id)
 
   return{
     "name": exercise.name,
@@ -79,9 +79,9 @@ def create_exercise():
 @exercises_bp.route("/<exercise_id>", methods=["DELETE"])
 
 def delete_exercise(exercise_id):
-  exercise = verify_exercise_exists(exercise_id)
+  exercise = verify_id_exists(exercise_id)
 
   db.session.delete(exercise)
   db.session.commit()
 
-  make_response(jsonify("The exercise has been deleted"))
+  return make_response(jsonify("The exercise has been deleted"),200)
