@@ -34,7 +34,7 @@ def validate_models(cls, model_id):
   return model
 
 ################ USER ENDPOINTS ############################
-user_bp = Blueprint('user_bp', __name__)
+user_bp = Blueprint('user_bp', __name__, url_prefix="/users")
 
 @user_bp.route('/user', methods=["POST"])
 def create_user():
@@ -51,18 +51,17 @@ def create_user():
   return make_response(jsonify(f"User {new_user.username} has been created"), 201)
 
 # for testing purposes, comment out on final version
-@user_bp.route('/users/<user_id>', methods=["GET"])
+@user_bp.route('/<user_id>', methods=["GET"])
 def get_user(user_id):
   user = validate_models(User, user_id)
 
-  return user.username
-
+  return user.workouts
   
-workout_bp = Blueprint('workout_bp', __name__, url_prefix="/workouts")
 
-@workout_bp.route('/<user_id>/workout', methods=["GET"])
+@user_bp.route('/<user_id>/workout', methods=["GET"])
 def get_workout(user_id):
   user = validate_models(User, user_id)
+  ###### create workout variable
   muscle_focus = request.args.get("focus")
   exp_level = request.args.get("experience")
   if not muscle_focus or not exp_level:
@@ -75,15 +74,34 @@ def get_workout(user_id):
             "difficulty": exp_level},
     headers={'X-Api-Key': os.environ.get("EXERCISE_API_KEY")}
   )
-  user.workouts.append(response)
+
+  exercise_response = response.json()
+  workout_list = []
+  for item in exercise_response:
+    workout_list.append(
+      {
+        "name": item.name,
+        # "type": item.type,
+        "muscle": item.muscle,
+        "equipment": item.equipment,
+        "difficulty": item.difficulty,
+        "instructions": item.instructions
+      }
+    )
+
+  print(workout_list)
+
+# try workout.workout_plan instead
+  user.workout_plan.extend(workout_list)
   db.session.commit()
-  return jsonify(response.json())
+  return jsonify("User workout has been created")
 
 
 
 
 
 ################ WORKOUT ENDPOINTS ############################
+workout_bp = Blueprint('workout_bp', __name__, url_prefix="/workouts")
 
 @workout_bp.route('/<user_id>/workouts', methods=["GET"])
 def get_all_user_workouts(user_id):
