@@ -55,13 +55,12 @@ def create_user():
 def get_user(user_id):
   user = validate_models(User, user_id)
 
-  return user.workouts
+  return user.username
   
 
 @user_bp.route('/<user_id>/workout', methods=["GET"])
 def get_workout(user_id):
   user = validate_models(User, user_id)
-  ###### create workout variable
   muscle_focus = request.args.get("focus")
   exp_level = request.args.get("experience")
   if not muscle_focus or not exp_level:
@@ -76,25 +75,42 @@ def get_workout(user_id):
   )
 
   exercise_response = response.json()
+
   workout_list = []
   for item in exercise_response:
-    workout_list.append(
-      {
-        "name": item.name,
-        # "type": item.type,
-        "muscle": item.muscle,
-        "equipment": item.equipment,
-        "difficulty": item.difficulty,
-        "instructions": item.instructions
-      }
-    )
+    exercise = Exercise(
+      item.name,
+      item.muscle,
+      item.equipment,
+      item.difficulty,
+      item.instructions
+      )
+    workout_list.append(exercise)
+    db.session.add(exercise)
+    db.session.commit()
 
-  print(workout_list)
+  
+  workout = Workout(workout_plan=workout_list, is_saved=False)
+
+  db.session.add(workout)
+  db.session.commit()
+
+  user.workouts.append(workout)
+
+  db.session.commit()
+
+  
+  return jsonify("User workout has been created")
+
+
 
 # try workout.workout_plan instead
-  user.workout_plan.extend(workout_list)
-  db.session.commit()
-  return jsonify("User workout has been created")
+  # workout.workout_plan.(workout_list)
+
+
+  # db.session.add(workout)
+  # user.workouts.append(workout.workout_id)
+  # db.session.commit()
 
 
 

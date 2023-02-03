@@ -19,7 +19,9 @@ class Workout(db.Model):
   workout_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   workout_plan = db.Column(db.JSON, nullable=False)
   is_saved = db.Column(db.Boolean, nullable=True)
-  exercises = db.relationship("Exercise", secondary="workout_exercise", backref='workouts')
+  user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
+  user = db.relationship("User", back_populates="workouts")
+  # exercises = db.relationship("Exercise", secondary="workout_exercise", backref='workouts')
   # trains = db.relationship("Exercise", secondary="workout_exercises", backref='practice')
 
 
@@ -31,7 +33,8 @@ class Exercise(db.Model):
   name = db.Column(db.String, nullable=False)
   muscle = db.Column(db.String, nullable=False)
   equipment = db.Column(db.String, nullable=False)
-  directions = db.Column(db.Text, nullable=False)
+  difficulty = db.Column(db.String, nullable=False)
+  instructions = db.Column(db.Text, nullable=False)
 
 
   #method where user puts in weight info per exercise

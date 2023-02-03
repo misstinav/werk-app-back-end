@@ -25,15 +25,10 @@ def create_app(test_config=None):
   from app.models.workout_exercise import Workout
   from app.models.workout_exercise import Exercise
   
-  from app.models.user_workouts import UserWorkouts
+  # from app.models.user_workouts import UserWorkouts
   from app.models.user_workouts import User
 
 
-  # from app.models.workouts_exercises import WorkoutExercises
-  # from app.models.exercise import Exercise
-  # from app.models.user import User
-  # from app.models.workout import Workout
-  # from app.models.user_workouts import UserWorkouts
 
   db.init_app(app)
   migrate.init_app(app, db)
