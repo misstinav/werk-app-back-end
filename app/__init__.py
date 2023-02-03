@@ -42,8 +42,11 @@ def create_app(test_config=None):
   from .exercise_routes import exercises_bp
   app.register_blueprint(exercises_bp)
 
-  from .workout_routes import workout_bp
+  from .exercise_routes import workout_bp
   app.register_blueprint(workout_bp)
+
+  from .exercise_routes import user_bp
+  app.register_blueprint(user_bp)
 
   CORS(app)
   return app
