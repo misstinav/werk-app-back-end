@@ -6,7 +6,6 @@ from app import db
 #   workout_id = db.Column(db.Integer, db.ForeignKey('workout.workout_id'), primary_key=True, nullable=False)
 
 UserWorkouts = db.Table('users_workouts',
-  # db.Column('id', db.Integer, primary_key=True),
   db.Column('user_id', db.Integer, db.ForeignKey('user.user_id')),
   db.Column('workout_id', db.Integer, db.ForeignKey('workout.workout_id'))
 )

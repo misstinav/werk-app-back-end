@@ -4,17 +4,23 @@
 
 from app import db
 
-WorkoutExercises = db.Table('workout_exercises',
-  db.Column('workout_id', db.Integer, db.ForeignKey('workout.workout_id')),
-  db.Column('exercise_id', db.Integer, db.ForeignKey('exercise.exercise_id'))
-)
+class WorkoutExercises(db.Model):
+  __tablename__ = "workout_exercise"
+  workout_id = db.Column(db.Integer, db.ForeignKey('workout.workout_id'), primary_key=True, nullable=False)
+  exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.exercise_id'), primary_key=True, nullable=False)
+
+# WorkoutExercises = db.Table('workout_exercises',
+#   db.Column('workout_id', db.Integer, db.ForeignKey('workout.workout_id')),
+#   db.Column('exercise_id', db.Integer, db.ForeignKey('exercise.exercise_id'))
+# )
 
 
 class Workout(db.Model):
   workout_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   workout_plan = db.Column(db.JSON, nullable=False)
   is_saved = db.Column(db.Boolean, nullable=True)
-  training = db.relationship("Exercise", secondary="workout_exercises", backref='practice')
+  exercises = db.relationship("Exercise", secondary="workout_exercise", backref='workouts')
+  # trains = db.relationship("Exercise", secondary="workout_exercises", backref='practice')
 
 
 

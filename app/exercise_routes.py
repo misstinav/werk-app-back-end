@@ -1,7 +1,11 @@
 import requests
 import os
 from flask import Blueprint, jsonify, make_response, abort, request
+from app.models.workout_exercise import Workout
+from app.models.user_workouts import User
 from app.models.workout_exercise import Exercise
+from app.models.workout_exercise import WorkoutExercises
+
 from app import db
 
 
@@ -18,19 +22,43 @@ from app import db
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 exercises_bp = Blueprint("exercises_bp", __name__, url_prefix="/exercises")
 
-def verify_id_exists(exercise_id):
+def validate_models(cls, model_id):
   try:
-    type(exercise_id) == int
+    model_id = int(model_id)
   except:
-    make_response({"error message": f"{exercise_id} is not a valid search"}, 400)
-  
-  exercise = Exercise.query.get(exercise_id)
-  if not exercise:
-    make_response({"message": "id number not found"}, 404)
+    abort(make_response({"message":f"{cls.__name__} {model_id} invalid"}, 400))
 
-  return exercise
+  model = cls.query.get(model_id)
+
+  if not model:
+    abort(make_response({"message":f"{cls.__name__} {model_id} not found"}, 404))
+  return model
+
 
 @exercises_bp.route("", methods=["GET"])
 def read_all_exercises():
@@ -51,9 +79,10 @@ def read_all_exercises():
   
   return jsonify(exercise_api_response)
 
+
 @exercises_bp.route("/<exercise_id>", methods=["GET"])
 def read_one_exercise(exercise_id):
-  exercise = verify_id_exists(exercise_id)
+  exercise = validate_models(Exercise, exercise_id)
 
   return{
     "name": exercise.name,
@@ -62,7 +91,8 @@ def read_one_exercise(exercise_id):
     "directions": exercise.directions
   }
 
-@exercises_bp.route("", methods=["POST"])
+
+@exercises_bp.route("/exercises", methods=["POST"])
 def create_exercise():
   client_request_body = request.get_json()
   new_exercise = Exercise(
@@ -76,10 +106,11 @@ def create_exercise():
 
   return make_response(jsonify(f"{new_exercise.name} has been created and added to your available exercises"), 201)
 
+
 @exercises_bp.route("/<exercise_id>", methods=["DELETE"])
 
 def delete_exercise(exercise_id):
-  exercise = verify_id_exists(exercise_id)
+  exercise = validate_models(Exercise, exercise_id)
 
   db.session.delete(exercise)
   db.session.commit()
