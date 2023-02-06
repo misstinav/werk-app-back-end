@@ -1,4 +1,4 @@
-from app import db
+# from app import db
 
 # class UserWorkouts(db.Model):
 #   __tablename__ = "user_workout"
@@ -11,9 +11,12 @@ from app import db
 # )
 
 
-class User(db.Model):
-  user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-  username = db.Column(db.String(20))
-  password = db.Column(db.String)
-  workouts = db.relationship("Workout", back_populates="user")
-  # workouts = db.relationship('Workout', secondary='users_workouts', backref='users')
+# class AppUser(db.Model):
+#   appuser_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#   username = db.Column(db.String(20))
+#   password = db.Column(db.String)
+#   logged_exercise = db.Column(db.JSON)
+#   workouts = db.relationship("Workout", back_populates="app_user")
+#   workouts = db.relationship('Workout', secondary='users_workouts', backref='users')
+
+

@@ -9,39 +9,23 @@ db = SQLAlchemy()
 migrate = Migrate()
 load_dotenv()
 
-def create_app(test_config=None):
+def create_app():
   app = Flask(__name__)
 
   app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-  if test_config is None:
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
-  else:
-    app.config["TESTING"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_TEST_DATABASE_URI")
+  app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
 
   #models imported for alembic setup
-  from app.models.workout_exercise import WorkoutExercises
-  from app.models.workout_exercise import Workout
-  from app.models.workout_exercise import Exercise
-  
-  # from app.models.user_workouts import UserWorkouts
-  from app.models.user_workouts import User
-
-
+  from app.models.app_user import AppUser
+  from app. models.workout_exercise import WorkoutExercise
+  from app. models.workout_exercise import Workout
+  from app. models.workout_exercise import Exercise
 
   db.init_app(app)
   migrate.init_app(app, db)
   
   #register blueprints
-  from .exercise_routes import exercises_bp
-  app.register_blueprint(exercises_bp)
 
-  from .exercise_routes import workout_bp
-  app.register_blueprint(workout_bp)
-
-  from .exercise_routes import user_bp
-  app.register_blueprint(user_bp)
 
   CORS(app)
   return app

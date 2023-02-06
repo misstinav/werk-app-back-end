@@ -1,10 +1,10 @@
-from flask import Blueprint, jsonify, make_response, abort, request
-from app.models.workout_exercise import Workout
-from app.models.user_workouts import User
-from app import db
-from app.exercise_routes import validate_models
+# from flask import Blueprint, jsonify, make_response, abort, request
+# from app.models.old_workout_exercise import Workout
+# from app.models.old_user_workouts import User
+# from app.ol import db
+# from app.old_exercise_routes import validate_models
 
-workout_bp = Blueprint("workout_bp", __name__)
+# workout_bp = Blueprint("workout_bp", __name__)
 
 
 # @workout_bp.route("/", methods=["PUT"])
