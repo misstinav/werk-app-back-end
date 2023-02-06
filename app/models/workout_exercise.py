@@ -20,8 +20,8 @@ class Workout(db.Model):
   workout_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   workout_plan = db.Column(db.JSON, nullable=False)
   is_saved = db.Column(db.Boolean, nullable=True)
-  user_id = db.Column(db.Integer, db.ForeignKey("appuser.user_id"))
-  user = db.relationship("AppUser", back_populates="workouts")
+  appuser_id = db.Column(db.Integer, db.ForeignKey("appuser.appuser_id"))
+  appuser = db.relationship("AppUser", back_populates="workouts")
   exercises = db.relationship("Exercise", secondary="workout_exercise", backref='workouts')
   # trains = db.relationship("Exercise", secondary="workout_exercises", backref='practice')
 
@@ -38,6 +38,7 @@ class Exercise(db.Model):
     exercise_as_dict = {}
     exercise_as_dict['name'] = self.name
     exercise_as_dict['muscle'] = self.muscle
+    exercise_as_dict['equipment'] = self.equipment
     exercise_as_dict['difficulty'] = self.difficulty
     
     return exercise_as_dict

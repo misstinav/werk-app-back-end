@@ -19,9 +19,3 @@
 #     workout_plan = {exercise_id : f"{exercise.name}"}
 #   )
 
-
-# def read_user_current_workout(user_id):
-#   user = validate_models(User, user_id)
-#   workout_plans = Workout.query.all()
-
-#   workout_response = []
