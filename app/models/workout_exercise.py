@@ -23,7 +23,7 @@ class Workout(db.Model):
     self.is_saved = True
   
   def unsave_workout(self):
-    self.is_saved = False
+    self.is_saved = None
 
 
 

@@ -8,6 +8,9 @@ from app.models.workout_exercise import Exercise
 from app.models.app_user import AppUser
 from app import db
 
+# sqlalchemy querying common operators
+# https://rimsovankiry.medium.com/sqlalchemy-query-with-common-filters-c7adbd3321a6
+
 
 def validate_models(cls, model_id):
   try:
@@ -224,12 +227,12 @@ def get_workout(appuser_id):
   
   return jsonify(f"{user.username} has a new workout with the following exercises: {workout_list}")
 
-############# ENDPOINT NOT WORKING ###############
+
 @appuser_bp.route("<appuser_id>/workouts/<workout_id>/save", methods=["PATCH"])
 def save_unsaved_workout(appuser_id, workout_id):
   user = validate_models(AppUser, appuser_id)
   workout = validate_models(Workout, workout_id)
-  if workout.workout_id in user.workouts:
+  if workout.appuser_id == user.appuser_id:
     workout.save_workout()
     db.session.commit()
   else:
@@ -238,11 +241,11 @@ def save_unsaved_workout(appuser_id, workout_id):
   return "Workout has been saved"
 
 
-@appuser_bp.route("<appuser_id>/workouts/<workout_id>/unsave")
+@appuser_bp.route("<appuser_id>/workouts/<workout_id>/unsave", methods=["PATCH"])
 def unsave_saved_workout(appuser_id, workout_id):
   user = validate_models(AppUser, appuser_id)
-  if user.workouts.workout_id == workout_id:
-    workout = validate_models(Workout, workout_id)
+  workout = validate_models(Workout, workout_id)
+  if workout.appuser_id == user.appuser_id:
     workout.unsave_workout()
     db.session.commit()
   else:
