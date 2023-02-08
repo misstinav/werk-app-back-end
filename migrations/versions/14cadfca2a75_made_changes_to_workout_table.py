@@ -1,8 +1,8 @@
-"""using single user with m-2-m connection between workout & exercise
+"""made changes to workout table
 
-Revision ID: d73460a5afd6
+Revision ID: 14cadfca2a75
 Revises: 
-Create Date: 2023-02-06 11:46:18.526758
+Create Date: 2023-02-07 16:19:56.486067
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd73460a5afd6'
+revision = '14cadfca2a75'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -36,7 +36,6 @@ def upgrade():
     )
     op.create_table('workout',
     sa.Column('workout_id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('workout_plan', sa.JSON(), nullable=False),
     sa.Column('is_saved', sa.Boolean(), nullable=True),
     sa.Column('appuser_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['appuser_id'], ['appuser.appuser_id'], ),

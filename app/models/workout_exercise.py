@@ -10,20 +10,22 @@ class WorkoutExercise(db.Model):
   workout_id = db.Column(db.Integer, db.ForeignKey('workout.workout_id'), primary_key=True, nullable=False)
   exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.exercise_id'), primary_key=True, nullable=False)
 
-# WorkoutExercises = db.Table('workout_exercises',
-#   db.Column('workout_id', db.Integer, db.ForeignKey('workout.workout_id')),
-#   db.Column('exercise_id', db.Integer, db.ForeignKey('exercise.exercise_id'))
-# )
 
 class Workout(db.Model):
   __tablename__ = 'workout'
   workout_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-  workout_plan = db.Column(db.JSON, nullable=False)
   is_saved = db.Column(db.Boolean, nullable=True)
   appuser_id = db.Column(db.Integer, db.ForeignKey("appuser.appuser_id"))
   appuser = db.relationship("AppUser", back_populates="workouts")
   exercises = db.relationship("Exercise", secondary="workout_exercise", backref='workouts')
-  # trains = db.relationship("Exercise", secondary="workout_exercises", backref='practice')
+
+  def save_workout(self):
+    self.is_saved = True
+  
+  def unsave_workout(self):
+    self.is_saved = False
+
+
 
 class Exercise(db.Model):
   __tablename__ = 'exercise'
@@ -33,6 +35,7 @@ class Exercise(db.Model):
   equipment = db.Column(db.String, nullable=False)
   difficulty = db.Column(db.String, nullable=False)
   completed_at = db.Column(db.Date, nullable=True)
+
 
   def to_dict(self):
     exercise_as_dict = {}

@@ -117,16 +117,19 @@ appuser_bp = Blueprint('appuser', __name__, url_prefix="/users")
 @appuser_bp.route("", methods=["POST"])
 def create_user():
   request_body = request.get_json()
-  new_user = AppUser(
-    username=request_body['username'],
-    password=request_body['password']
-  )
-  db.session.add(new_user)
-  db.session.commit()
+  if not request_body['username'] or not request_body['password']:
+    return "Please enter a username and password to create an account"
+  else:
+    new_user = AppUser(
+      username=request_body['username'],
+      password=request_body['password']
+    )
+    db.session.add(new_user)
+    db.session.commit()
 
   return jsonify(f"User {new_user.username} has been created")
 
-### testing purposes, comment out for final version
+
 @appuser_bp.route("", methods=["GET"])
 def get_users():
   users = AppUser.query.all()
@@ -146,24 +149,33 @@ def get_users():
 @appuser_bp.route("/<appuser_id>", methods=['GET'])
 def get_single_user(appuser_id):
   user = validate_models(AppUser, appuser_id)
+  response = {
+    f"{user.username}" : user.to_dict()
+  }
 
-  return jsonify(user.username)
+  return jsonify(response)
 
+########### USER WORKOUT ENDPOINTS ############
 @appuser_bp.route("/<appuser_id>/workouts", methods=["GET"])
 def get_all_user_workouts(appuser_id):
   user = validate_models(AppUser, appuser_id)
-  workouts = Workout.query.all()
+  workouts = Workout.query.filter(Workout.appuser_id == user.appuser_id)
+  workout_exercise = WorkoutExercise.query.all()
+  # could be useful later. Can delete if not used at all
+  # workout_id_list = [workout.workout_id for workout in workouts]
 
-  workouts_response = []
+  workouts_dict = {}
   for workout in workouts:
-    if workout.appuser_id == user.appuser_id:
-      workouts_response.append(
-        {
-          "workout_id": workout.workout_id,
-          "workout_plan": workout.workout_plan
-        }
-      )
-  return jsonify(workouts_response)
+    for item in workout_exercise:
+      if workout.workout_id == item.workout_id:
+        exercise = validate_models(Exercise, item.exercise_id)
+        if f'workout{item.workout_id}' not in workouts_dict:
+          workouts_dict[f'workout{item.workout_id}'] = [exercise.name]
+        elif f'workout{item.workout_id}' in workouts_dict:
+          workouts_dict[f'workout{item.workout_id}'].append(exercise.name)
+
+  return workouts_dict
+
 
 
 @appuser_bp.route('/<appuser_id>/workout', methods=["GET"])
@@ -182,8 +194,6 @@ def get_workout(appuser_id):
     headers={'X-Api-Key': os.environ.get("EXERCISE_API_KEY")}
   )
 
-  # json_response = json.loads(response)
-  # return json_response
   workout_list = []
   exercises_response = []
   for item in response.json():
@@ -196,12 +206,9 @@ def get_workout(appuser_id):
           'difficulty' : item['difficulty']
         }
       )
-  # return response.json()
-
-  # if not exercises_response:
-  #   return jsonify("Exercise response is empty")
-  #   # exercise response is currently empty
-
+  new_workout = Workout(appuser_id=user.appuser_id)
+  db.session.add(new_workout)
+  db.session.commit()
   for item in exercises_response:
     new_exercise = Exercise(
       name=item['name'],
@@ -210,18 +217,37 @@ def get_workout(appuser_id):
       difficulty=item['difficulty']
     )
     db.session.add(new_exercise)
+    new_workout.exercises.append(new_exercise)
+
     db.session.commit()
     workout_list.append(new_exercise.name)
-
-  # # if not workout_list:
-  # #   return {"message": "workout list is empty"}
-  # #  # workout list is currently empty
-
-
-  workout = Workout(workout_plan=workout_list, is_saved=False, appuser_id=user.appuser_id)
-
-  db.session.add(workout)
-  db.session.commit()
-
   
   return jsonify(f"{user.username} has a new workout with the following exercises: {workout_list}")
+
+############# ENDPOINT NOT WORKING ###############
+@appuser_bp.route("<appuser_id>/workouts/<workout_id>/save", methods=["PATCH"])
+def save_unsaved_workout(appuser_id, workout_id):
+  user = validate_models(AppUser, appuser_id)
+  workout = validate_models(Workout, workout_id)
+  if workout.workout_id in user.workouts:
+    workout.save_workout()
+    db.session.commit()
+  else:
+    return f"{user.username} does not have access to that workout"
+
+  return "Workout has been saved"
+
+
+@appuser_bp.route("<appuser_id>/workouts/<workout_id>/unsave")
+def unsave_saved_workout(appuser_id, workout_id):
+  user = validate_models(AppUser, appuser_id)
+  if user.workouts.workout_id == workout_id:
+    workout = validate_models(Workout, workout_id)
+    workout.unsave_workout()
+    db.session.commit()
+  else:
+    return f"{user.username} does not have that workout saved"
+
+  return "Workout has been removed from the saved list"
+
+
