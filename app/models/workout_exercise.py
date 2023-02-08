@@ -34,11 +34,12 @@ class Exercise(db.Model):
   muscle = db.Column(db.String, nullable=False)
   equipment = db.Column(db.String, nullable=False)
   difficulty = db.Column(db.String, nullable=False)
-  completed_at = db.Column(db.Date, nullable=True)
+  completed_at = db.Column(db.JSON, nullable=True)
 
 
   def to_dict(self):
     exercise_as_dict = {}
+    exercise_as_dict['id'] = self.exercise_id
     exercise_as_dict['name'] = self.name
     exercise_as_dict['muscle'] = self.muscle
     exercise_as_dict['equipment'] = self.equipment
@@ -47,7 +48,7 @@ class Exercise(db.Model):
     return exercise_as_dict
 
   def mark_completed(self):
-    self.completed_at = date.today()
+    self.completed_at.append(date.today())
 
 
 #   #method where user puts in weight info per exercise

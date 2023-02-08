@@ -1,8 +1,8 @@
-"""made changes to workout table
+"""recreated database with hopefully correct column datatypes
 
-Revision ID: 14cadfca2a75
+Revision ID: e25b3771ae1f
 Revises: 
-Create Date: 2023-02-07 16:19:56.486067
+Create Date: 2023-02-08 12:16:58.971681
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '14cadfca2a75'
+revision = 'e25b3771ae1f'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,7 +31,7 @@ def upgrade():
     sa.Column('muscle', sa.String(), nullable=False),
     sa.Column('equipment', sa.String(), nullable=False),
     sa.Column('difficulty', sa.String(), nullable=False),
-    sa.Column('completed_at', sa.Date(), nullable=True),
+    sa.Column('completed_at', sa.JSON(), nullable=True),
     sa.PrimaryKeyConstraint('exercise_id')
     )
     op.create_table('workout',
