@@ -2,7 +2,7 @@ import requests
 import os
 import json
 import random
-from datetime import date
+from datetime import date, datetime
 from sqlalchemy import and_
 from flask import Blueprint, jsonify, make_response, abort, request
 from app.models.workout_exercise import WorkoutExercise
@@ -112,7 +112,6 @@ def create_workout(appuser_id):
   # cant randomize object query. figure it out
   # exercise = random.choice(exercises)
 
-
   new_workout = Workout(appuser_id=user.appuser_id)
   db.session.add(new_workout)
   db.session.commit()
@@ -129,20 +128,35 @@ def create_workout(appuser_id):
 
   return jsonify(f"{user.username} has a new workout with the following exercises: {workout_list}")
 
-  # while len(workout_list) < 6:
-  #   new_exercise = random.choice(exercises)
-  #   workout_list.append(new_exercise.name)
-  #   new_workout.exercises.append(new_exercise)
-  # for exercise in exercises:
-  #   new_exercise = random.choice(exercise)
-  #   if len(workout_list) < 6:
-  #     if new_exercise.name not in workout_list:
-  #       workout_list.append(new_exercise.name)
-  #       new_workout.exercises.append(new_exercise)
-  #   else:
-  #     break
 
-  
+####SOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOS##
+# @appuser_bp.route("/<appuser_id>/exercises/<exercise_id>/log_exercise", methods=["PATCH"])
+# def patch_logged_exercise(appuser_id, exercise_id):
+#   user = validate_models(AppUser, appuser_id)
+#   # workout = validate_models(Workout, workout_id)
+#   valid_exercise = validate_models(Exercise, exercise_id)
+#   workout_exercise = WorkoutExercise.query.all()
+
+#   temp = user.logged_exercise
+
+#   user.logged_exercise = {}
+#   db.session.commit()
+
+#   if f'workout{workout_id}' not in temp:
+#     temp[f'workout{workout_id}'] = []
+
+#   for item in workout_exercise:
+#     if workout.workout_id == item.workout_id:
+#       exercise = validate_models(Exercise, item.exercise_id)
+#       if exercise.name not in temp[f'workout{workout_id}']:
+#         temp[f'workout{workout_id}'].append({
+#           exercise.name : [date.today().isoformat()]
+#           })
+#       else:
+#         for exercise in temp[f'workout{workout_id}']:
+#           if exercise.name == valid_exercise.name:
+
+
 
 
 @appuser_bp.route("<appuser_id>/workouts/<workout_id>/save", methods=["PATCH"])
@@ -171,83 +185,72 @@ def unsave_saved_workout(appuser_id, workout_id):
   return "Workout has been removed from the saved list"
 
 
-@appuser_bp.route("/<appuser_id>/exercises/<exercise_id>/log_exercise", methods=["PATCH"])
+@appuser_bp.route("/<appuser_id>/exercises/<exercise_id>/completed_at", methods=["PATCH"])
 def log_exercise(appuser_id, exercise_id):
   user = validate_models(AppUser, appuser_id)
   exercise = validate_models(Exercise, exercise_id)
-  reps = request.args.get("reps")
-  weight = request.args.get("weight")
+  reps = int(request.args.get("reps"))
+  weight = int(request.args.get("weight"))
   
   if not reps or not weight:
     return "Please enter your reps and weight in lb to save set"
 
-  # if not exercise.completed_at:
-  #   exercise.completed_at.extend({
-  #     {user.username} : [exercise.mark_completed]
-  #   })
-  # # return jsonify(exercise.completed_at)
-    # exercise.completed_at[{user.username}] = [exercise.mark_completed]
-  if not exercise.completed_at:
-    exercise.completed_at = {
-      user.username : {
-        str(date.today()) :
-        [
-          {"reps" : [{reps}]},
-          {"weight" : [{weight}]}
+  # save off the current completed_at JSON in temp
+  temp = exercise.completed_at
+
+  # Clear out of db exercise.completed at
+  exercise.completed_at = {}
+  db.session.commit()
+  
+  # Modify temp
+  completed_at_list = []
+
+  if user.username not in temp:
+    temp[user.username] = [] 
+
+  today = date.today().isoformat()
+  if temp[user.username]:
+    for date_obj in temp[user.username]:
+      temp = str(date_obj)
+      dt_tuple = tuple([int(x) for x in temp[2:1].split('-')])
+      temp_date = datetime.datetime.strptime(dt_tuple, '%Y-%m-%d')
+      today = datetime.strptime(today, '%Y-%m-%d')
+      if temp_date == today:
+        return "we okay"
+      # # if date_obj == today:
+      #   return "inside"
+        # for set_data in date_obj:
+        #   set_data['reps'].append(reps)
+        #   set_data['weight'].append(weight)
+  else:
+    temp[user.username] = [
+      {
+        today : [
+          {"reps" :[reps]},
+          {"weight" : [weight]}
         ]
       }
-    }
-    completed_at_list = []
-    for item in exercise.completed_at:
-      completed_at_list.append(item)
-    return jsonify(completed_at_list)
-  else:
-    return "There's data present in the completed_at column"
+    ]
+    
+
+  # Saving this as temp works because it was empty
+  exercise.completed_at = temp
+  db.session.commit()
 
 
 
-  # if not exercise.completed_at:
-  # return "it didn't work"
-
-
-
-
-
-  # for item in exercise.completed_at:
-  #   if item[{user.username}]:
-  #   # if not exercise.completed_at[f'{user.username}']:
-  #     exercise.completed_at[{user.username}].append(exercise.mark_complete)
-  #   else:
-  #     exercise.completed_at[{user.username}] = [exercise.mark_complete]
-      
-
-  # if date.today not in exercise.completed_at[{user.username}]:
-  #   return "completed at did not update"
-
-
-
-
-
-
-
-  # if date.today in exercise.completed_at[{user.username}]:
-  #   if not user.logged_exercise[{exercise.name}]:
-  #     user.logged_exercise[{exercise.name}] = {
-  #       {
-  #         str(date.today) : 
-  #         [
-  #           {'reps': [{reps}]},
-  #           {'weight': [{weight}]}
-  #         ]
-  #       }
-  #     }
-  #   else:
-  #     user.logged_exercise[{exercise.name}][str(date.today)][0]['reps'].append({reps})
-  #     user.logged_exercise[{exercise.name}][str(date.today)][0]['weight'].append({weight})
-  # else:
-  #   return "exercise completed at did not work properly"
+  # completed_at_list = []
+  # for user_obj in exercise.completed_at:
+  #   if user_obj == user.username:
+  #     for date_obj in user_obj:
+  #       if date_obj == today.isoformat():
+  #         completed_at_list.append({date_obj})
+  # return f"Here's the obj{completed_at_list}"
+  return temp
 
   return "Set has been logged"
+
+
 
 
 
@@ -308,26 +311,3 @@ def get_one_exercise(exercise_id):
   exercise = validate_models(Exercise, exercise_id)
 
   return jsonify(exercise.to_dict())
-
-# @exercises_bp.route("", methods=["POST"])
-# def create_exercise():
-
-#   request_body = request.get_json()
-#   try:
-#     new_exercise= Exercise(
-#       name=request_body["name"],
-#       muscle=request_body["muscle"],
-#       difficulty=request_body["difficulty"]
-#     )
-
-#   except KeyError:
-#     return {"details": "Missing Entry Description"}, 400
-#   db.session.add(new_exercise)
-#   db.session.commit()
-
-#   return {
-#     "id": new_exercise.exercise_id,
-#     "name": new_exercise.name,
-#     "muscle": new_exercise.muscle,
-#     "difficulty": new_exercise.difficulty
-#   }, 201

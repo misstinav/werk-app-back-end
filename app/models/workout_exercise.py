@@ -46,11 +46,3 @@ class Exercise(db.Model):
     exercise_as_dict['difficulty'] = self.difficulty
     
     return exercise_as_dict
-
-  def mark_completed(self):
-    self.completed_at.append(date.today())
-
-
-#   #method where user puts in weight info per exercise
-#   # def log_exercise_weight(self):
-#   #   pass
