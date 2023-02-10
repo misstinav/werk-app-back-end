@@ -67,8 +67,11 @@ def get_users():
 @appuser_bp.route("/<appuser_id>", methods=['GET'])
 def get_single_user(appuser_id):
   user = validate_models(AppUser, appuser_id)
-  response = {
-    f"{user.username}" : user.to_dict()
+  
+  return {
+    "id" : user.appuser_id,
+    "username" : user.username,
+    "logged exercises" : user.logged_exercise
   }
 
   return jsonify(response)
@@ -137,29 +140,111 @@ def patch_logged_exercise(appuser_id, workout_id):
   user = validate_models(AppUser, appuser_id)
   workout = validate_models(Workout, workout_id)
   workout_exercise = WorkoutExercise.query.filter(WorkoutExercise.workout_id == workout.workout_id)
+  today = date.today().isoformat()
   
   exercise_ids_list = []
   for item in workout_exercise:
     exercise_ids_list.append(item.exercise_id)
-  return exercise_ids_list
-  # temp = user.logged_exercise
+  # return exercise_ids_list
+  temp = [user.logged_exercise]
 
-  # user.logged_exercise = {}
-  # db.session.commit()
+  user.logged_exercise = {}
+  db.session.commit()
 
-  # if f'workout{workout_id}' not in temp:
-  #   temp[f'workout{workout_id}'] = []
+  # ##
+  # [
+  #   {
+  #     exercise_name : [dates, dates, dates]
+  #   }
+  # ]
 
-  # for item in workout_exercise:
-  #   if workout.workout_id == item.workout_id:
-  #     exercise = validate_models(Exercise, item.exercise_id)
-  #     if exercise.name not in temp[f'workout{workout_id}']:
-  #       temp[f'workout{workout_id}'].append({
-  #         exercise.name : [date.today().isoformat()]
-  #         })
-  #     else:
-  #       for exercise in temp[f'workout{workout_id}']:
-  #         if exercise.name == valid_exercise.name:
+  exercise_name = request.args.get("exercise name")
+  exercise_id = request.args.get("exercise id")
+  if not exercise_name:
+    return "Please enter an exercise name"
+
+  log_exercise(user.appuser_id, exercise_id)
+  if exercise_name not in temp:
+    # temp[{exercise_name}] = [today]
+    temp.append({
+      f"{exercise_name}" : [today]
+    })
+  else:
+    temp[f"{exercise_name}"].append(today)
+
+  user.logged_exercise = temp
+  db.session.commit()
+
+  return "Exercise has been logged"
+
+# @appuser_bp.route("/<appuser_id>/exercises/<exercise_id>/completed_at", methods=["PATCH"])
+def log_exercise(appuser_id, exercise_id):
+  user = validate_models(AppUser, appuser_id)
+  exercise = validate_models(Exercise, exercise_id)
+  reps = int(request.args.get("reps"))
+  weight = int(request.args.get("weight"))
+  
+  if not reps or not weight:
+    return "Please enter your reps and weight in lb to save set"
+
+  # save off the current completed_at JSON in temp
+  temp = exercise.completed_at
+
+  # Clear out of db exercise.completed at
+  exercise.completed_at = {}
+  db.session.commit()
+  
+  # Modify temp
+  completed_at_list = []
+
+  if user.username not in temp:
+    # temp[user.username] = []
+    temp.append({
+      user.username : []
+    })
+
+  today = date.today().isoformat()
+  print(today)
+  if temp[user.username]:
+    for date_obj in temp[user.username]:
+      # temp = str(date_obj)
+      # dt_tuple = tuple([int(x) for x in temp[2:1].split('-')])
+      # temp_date = datetime.datetime.strptime(dt_tuple, '%Y-%m-%d')
+      # today = datetime.strptime(today, '%Y-%m-%d')
+      # if temp_date == today:
+      #   return "we okay"
+      if date_obj == today:
+        # return "inside"
+        for set_data in date_obj:
+          set_data['reps'].append(reps)
+          set_data['weight'].append(weight)
+  else:
+    temp[user.username] = [
+      {
+        today : [
+          {"reps" :[reps]},
+          {"weight" : [weight]}
+        ]
+      }
+    ]
+    
+
+  # Saving this as temp works because it was empty
+  exercise.completed_at = temp
+  db.session.commit()
+
+
+
+  # completed_at_list = []
+  # for user_obj in exercise.completed_at:
+  #   if user_obj == user.username:
+  #     for date_obj in user_obj:
+  #       if date_obj == today.isoformat():
+  #         completed_at_list.append({date_obj})
+  # return f"Here's the obj{completed_at_list}"
+  # return temp
+
+  return "Set has been logged"
 
 
 
@@ -190,71 +275,7 @@ def unsave_saved_workout(appuser_id, workout_id):
   return "Workout has been removed from the saved list"
 
 
-@appuser_bp.route("/<appuser_id>/exercises/<exercise_id>/completed_at", methods=["PATCH"])
-def log_exercise(appuser_id, exercise_id):
-  user = validate_models(AppUser, appuser_id)
-  exercise = validate_models(Exercise, exercise_id)
-  reps = int(request.args.get("reps"))
-  weight = int(request.args.get("weight"))
-  
-  if not reps or not weight:
-    return "Please enter your reps and weight in lb to save set"
 
-  # save off the current completed_at JSON in temp
-  temp = exercise.completed_at
-
-  # Clear out of db exercise.completed at
-  exercise.completed_at = {}
-  db.session.commit()
-  
-  # Modify temp
-  completed_at_list = []
-
-  if user.username not in temp:
-    temp[user.username] = [] 
-
-  today = date.today().isoformat()
-  print(today)
-  if temp[user.username]:
-    for date_obj in temp[user.username]:
-      temp = str(date_obj)
-      dt_tuple = tuple([int(x) for x in temp[2:1].split('-')])
-      temp_date = datetime.datetime.strptime(dt_tuple, '%Y-%m-%d')
-      today = datetime.strptime(today, '%Y-%m-%d')
-      if temp_date == today:
-        return "we okay"
-      # if date_obj == today:
-      #   return "inside"
-        for set_data in date_obj:
-          set_data['reps'].append(reps)
-          set_data['weight'].append(weight)
-  else:
-    temp[user.username] = [
-      {
-        today : [
-          {"reps" :[reps]},
-          {"weight" : [weight]}
-        ]
-      }
-    ]
-    
-
-  # Saving this as temp works because it was empty
-  exercise.completed_at = temp
-  db.session.commit()
-
-
-
-  # completed_at_list = []
-  # for user_obj in exercise.completed_at:
-  #   if user_obj == user.username:
-  #     for date_obj in user_obj:
-  #       if date_obj == today.isoformat():
-  #         completed_at_list.append({date_obj})
-  # return f"Here's the obj{completed_at_list}"
-  return temp
-
-  return "Set has been logged"
 
 
 
