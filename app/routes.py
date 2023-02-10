@@ -86,16 +86,17 @@ def get_all_user_workouts(appuser_id):
   workouts_dict = {}
   for workout in workouts:
     for item in workout_exercise:
-      if workout.workout_id == item.workout_id:
+      iwi = item.workout_id
+      if workout.workout_id == iwi:
         exercise = validate_models(Exercise, item.exercise_id)
-        if f'workout{item.workout_id}' not in workouts_dict:
-          workouts_dict[f'workout{item.workout_id}'] = [exercise.name]
-        elif f'workout{item.workout_id}' in workouts_dict:
-          workouts_dict[f'workout{item.workout_id}'].append(exercise.name)
+        if f'workout{iwi}' not in workouts_dict:
+          workouts_dict[f'workout{iwi}'] = [exercise.name]
+        elif f'workout{iwi}' in workouts_dict:
+          workouts_dict[f'workout{iwi}'].append(exercise.name)
 
   return workouts_dict
 
-@appuser_bp.route("/<appuser_id>/workout", methods=["POST"])
+@appuser_bp.route("/<appuser_id>/workouts", methods=["POST"])
 def create_workout(appuser_id):
   user = validate_models(AppUser, appuser_id)
   muscle_focus = request.args.get("muscle")
@@ -126,35 +127,39 @@ def create_workout(appuser_id):
     else:
       break
 
-  return jsonify(f"{user.username} has a new workout with the following exercises: {workout_list}")
+  # return jsonify(f"{user.username} has a new workout with the following exercises: {workout_list}")
+  return jsonify(workout_list)
 
 
 ####SOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOSOS##
-# @appuser_bp.route("/<appuser_id>/exercises/<exercise_id>/log_exercise", methods=["PATCH"])
-# def patch_logged_exercise(appuser_id, exercise_id):
-#   user = validate_models(AppUser, appuser_id)
-#   # workout = validate_models(Workout, workout_id)
-#   valid_exercise = validate_models(Exercise, exercise_id)
-#   workout_exercise = WorkoutExercise.query.all()
+@appuser_bp.route("/<appuser_id>/workouts/<workout_id>/log_exercise", methods=["PATCH"])
+def patch_logged_exercise(appuser_id, workout_id):
+  user = validate_models(AppUser, appuser_id)
+  workout = validate_models(Workout, workout_id)
+  workout_exercise = WorkoutExercise.query.filter(WorkoutExercise.workout_id == workout.workout_id)
+  
+  exercise_ids_list = []
+  for item in workout_exercise:
+    exercise_ids_list.append(item.exercise_id)
+  return exercise_ids_list
+  # temp = user.logged_exercise
 
-#   temp = user.logged_exercise
+  # user.logged_exercise = {}
+  # db.session.commit()
 
-#   user.logged_exercise = {}
-#   db.session.commit()
+  # if f'workout{workout_id}' not in temp:
+  #   temp[f'workout{workout_id}'] = []
 
-#   if f'workout{workout_id}' not in temp:
-#     temp[f'workout{workout_id}'] = []
-
-#   for item in workout_exercise:
-#     if workout.workout_id == item.workout_id:
-#       exercise = validate_models(Exercise, item.exercise_id)
-#       if exercise.name not in temp[f'workout{workout_id}']:
-#         temp[f'workout{workout_id}'].append({
-#           exercise.name : [date.today().isoformat()]
-#           })
-#       else:
-#         for exercise in temp[f'workout{workout_id}']:
-#           if exercise.name == valid_exercise.name:
+  # for item in workout_exercise:
+  #   if workout.workout_id == item.workout_id:
+  #     exercise = validate_models(Exercise, item.exercise_id)
+  #     if exercise.name not in temp[f'workout{workout_id}']:
+  #       temp[f'workout{workout_id}'].append({
+  #         exercise.name : [date.today().isoformat()]
+  #         })
+  #     else:
+  #       for exercise in temp[f'workout{workout_id}']:
+  #         if exercise.name == valid_exercise.name:
 
 
 
@@ -209,6 +214,7 @@ def log_exercise(appuser_id, exercise_id):
     temp[user.username] = [] 
 
   today = date.today().isoformat()
+  print(today)
   if temp[user.username]:
     for date_obj in temp[user.username]:
       temp = str(date_obj)
@@ -217,11 +223,11 @@ def log_exercise(appuser_id, exercise_id):
       today = datetime.strptime(today, '%Y-%m-%d')
       if temp_date == today:
         return "we okay"
-      # # if date_obj == today:
+      # if date_obj == today:
       #   return "inside"
-        # for set_data in date_obj:
-        #   set_data['reps'].append(reps)
-        #   set_data['weight'].append(weight)
+        for set_data in date_obj:
+          set_data['reps'].append(reps)
+          set_data['weight'].append(weight)
   else:
     temp[user.username] = [
       {
