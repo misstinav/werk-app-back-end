@@ -102,8 +102,10 @@ def get_all_user_workouts(appuser_id):
 @appuser_bp.route("/<appuser_id>/workouts", methods=["POST"])
 def create_workout(appuser_id):
   user = validate_models(AppUser, appuser_id)
-  muscle_focus = request.args.get("muscle")
-  exp_level = request.args.get("difficulty")
+  request_body = request.get_json()
+  muscle_focus = request_body[1]
+  exp_level = request_body[0]
+
   if not muscle_focus or not exp_level:
     return {"message": "must provide experience level and focus of workout"}
 
@@ -122,6 +124,7 @@ def create_workout(appuser_id):
 
   workout_list = []
   for exercise in exercises:
+    print(exercise)
     if len(workout_list) < 6:
       if exercise.name not in workout_list:
         workout_list.append(exercise.name)
@@ -129,7 +132,7 @@ def create_workout(appuser_id):
         db.session.commit()
     else:
       break
-
+  print(workout_list)
   # return jsonify(f"{user.username} has a new workout with the following exercises: {workout_list}")
   return jsonify(workout_list)
 
@@ -151,13 +154,6 @@ def patch_logged_exercise(appuser_id, workout_id):
   user.logged_exercise = {}
   db.session.commit()
 
-  # ##
-  # [
-  #   {
-  #     exercise_name : [dates, dates, dates]
-  #   }
-  # ]
-
   exercise_name = request.args.get("exercise name")
   exercise_id = request.args.get("exercise id")
   if not exercise_name:
@@ -165,7 +161,6 @@ def patch_logged_exercise(appuser_id, workout_id):
 
   log_exercise(user.appuser_id, exercise_id)
   if exercise_name not in temp:
-    # temp[{exercise_name}] = [today]
     temp.append({
       f"{exercise_name}" : [today]
     })
@@ -175,7 +170,10 @@ def patch_logged_exercise(appuser_id, workout_id):
   user.logged_exercise = temp
   db.session.commit()
 
-  return "Exercise has been logged"
+  return {
+    "username" : user.username,
+    "logged exercise": user.logged_exercise
+  }
 
 # @appuser_bp.route("/<appuser_id>/exercises/<exercise_id>/completed_at", methods=["PATCH"])
 def log_exercise(appuser_id, exercise_id):
@@ -198,26 +196,18 @@ def log_exercise(appuser_id, exercise_id):
   completed_at_list = []
 
   if user.username not in temp:
-    # temp[user.username] = []
     temp.append({
       user.username : []
     })
 
   today = date.today().isoformat()
-  print(today)
   if temp[user.username]:
-    for date_obj in temp[user.username]:
-      # temp = str(date_obj)
-      # dt_tuple = tuple([int(x) for x in temp[2:1].split('-')])
-      # temp_date = datetime.datetime.strptime(dt_tuple, '%Y-%m-%d')
-      # today = datetime.strptime(today, '%Y-%m-%d')
-      # if temp_date == today:
-      #   return "we okay"
-      if date_obj == today:
-        # return "inside"
-        for set_data in date_obj:
-          set_data['reps'].append(reps)
-          set_data['weight'].append(weight)
+    temp[user.username].append({
+      today : [
+        {"reps" :[reps]},
+        {"weight" : [weight]}
+      ]
+    })
   else:
     temp[user.username] = [
       {
@@ -227,7 +217,21 @@ def log_exercise(appuser_id, exercise_id):
         ]
       }
     ]
-    
+# # # # # # # # # Coming back to code  L A T E R # # # # # # # # # # # 
+      ### if username present in temp. Then compare date object in username to today's date to add more than 1 set per day ###
+    # for date_obj in temp[user.username]:
+      # temp = str(date_obj)
+      # dt_tuple = tuple([int(x) for x in temp[2:1].split('-')])
+      # temp_date = datetime.datetime.strptime(dt_tuple, '%Y-%m-%d')
+      # today = datetime.strptime(today, '%Y-%m-%d')
+      # if temp_date == today:
+      #   return "we okay"
+      # if date_obj == today:
+      #   # return "inside"
+      #   for set_data in date_obj:
+      #     set_data['reps'].append(reps)
+      #     set_data['weight'].append(weight)
+
 
   # Saving this as temp works because it was empty
   exercise.completed_at = temp
