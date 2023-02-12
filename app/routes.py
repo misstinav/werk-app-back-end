@@ -71,7 +71,7 @@ def get_single_user(appuser_id):
   return {
     "id" : user.appuser_id,
     "username" : user.username,
-    "logged exercises" : user.logged_exercise
+    "logged_exercises" : user.logged_exercise
   }
 
   return jsonify(response)
@@ -82,22 +82,24 @@ def get_single_user(appuser_id):
 def get_all_user_workouts(appuser_id):
   user = validate_models(AppUser, appuser_id)
   workouts = Workout.query.filter(Workout.appuser_id == user.appuser_id)
-  workout_exercise = WorkoutExercise.query.all()
   # could be useful later. Can delete if not used at all
   # workout_id_list = [workout.workout_id for workout in workouts]
-
-  workouts_dict = {}
+  
+  workouts_dict_list = []
   for workout in workouts:
+    exercise_name_list = []
+    workout_exercise = WorkoutExercise.query.filter_by(workout_id=workout.workout_id)
     for item in workout_exercise:
-      iwi = item.workout_id
-      if workout.workout_id == iwi:
-        exercise = validate_models(Exercise, item.exercise_id)
-        if f'workout{iwi}' not in workouts_dict:
-          workouts_dict[f'workout{iwi}'] = [exercise.name]
-        elif f'workout{iwi}' in workouts_dict:
-          workouts_dict[f'workout{iwi}'].append(exercise.name)
+      exercise = validate_models(Exercise, item.exercise_id)
+      exercise_name_list.append(exercise.name)
+    if not exercise_name_list:
+      continue
+    workouts_dict_list.append({
+      f"workout{workout.workout_id}" : exercise_name_list
+    })
 
-  return workouts_dict
+  return workouts_dict_list
+
 
 @appuser_bp.route("/<appuser_id>/workouts", methods=["POST"])
 def create_workout(appuser_id):
