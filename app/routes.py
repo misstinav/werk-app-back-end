@@ -151,6 +151,7 @@ def patch_logged_exercise(appuser_id, workout_id):
   for item in workout_exercise:
     exercise_ids_list.append(item.exercise_id)
 
+
   temp = user.logged_exercise
   # temp = []
 
@@ -205,9 +206,10 @@ def log_exercise(appuser_id, exercise_id):
 
   # save off the current completed_at JSON in temp
   temp = exercise.completed_at
+  # temp = []
 
   # Clear out of db exercise.completed at
-  exercise.completed_at = {}
+  exercise.completed_at = []
   db.session.commit()
   
   # Modify temp
