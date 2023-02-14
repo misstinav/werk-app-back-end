@@ -150,24 +150,39 @@ def patch_logged_exercise(appuser_id, workout_id):
   exercise_ids_list = []
   for item in workout_exercise:
     exercise_ids_list.append(item.exercise_id)
-  # return exercise_ids_list
-  temp = [user.logged_exercise]
 
-  user.logged_exercise = {}
+  temp = user.logged_exercise
+  # temp = []
+
+  
   db.session.commit()
-
+  
+  today = date.today().isoformat()
   exercise_name = request.args.get("exercise name")
   exercise_id = request.args.get("exercise id")
   if not exercise_name:
     return "Please enter an exercise name"
 
   log_exercise(user.appuser_id, exercise_id)
-  if exercise_name not in temp:
+  if temp:
+    for exec_dict in temp:
+
+      if exercise_name in exec_dict:
+        print("adding date to exercise dict")
+        exec_dict[exercise_name].append(today)
+        break
+
+    else:
+      print("adding exercise dict")
+      temp.append({
+        exercise_name : [today]
+      })
+
+  else:
+    print("When temp is empty, add exercise dict")
     temp.append({
       f"{exercise_name}" : [today]
     })
-  else:
-    temp[f"{exercise_name}"].append(today)
 
   user.logged_exercise = temp
   db.session.commit()
@@ -176,6 +191,7 @@ def patch_logged_exercise(appuser_id, workout_id):
     "username" : user.username,
     "logged exercise": user.logged_exercise
   }
+
 
 # @appuser_bp.route("/<appuser_id>/exercises/<exercise_id>/completed_at", methods=["PATCH"])
 def log_exercise(appuser_id, exercise_id):
@@ -197,10 +213,15 @@ def log_exercise(appuser_id, exercise_id):
   # Modify temp
   completed_at_list = []
 
-  if user.username not in temp:
-    temp.append({
+  if not temp:
+    temp = {
       user.username : []
-    })
+    }
+  for user_dict in temp:
+    if user.username != user_dict:
+      temp = {
+        user.username : []
+      }
 
   today = date.today().isoformat()
   if temp[user.username]:
@@ -295,38 +316,6 @@ def unsave_saved_workout(appuser_id, workout_id):
 ############# EXERCISE ROUTES ####################
 exercises_bp = Blueprint("exercises", __name__, url_prefix="/exercises")
 
-# @exercises_bp.route("", methods=["POST"])
-# def create_all_exercises():
-#   response = requests.get(
-#   "https://api.api-ninjas.com/v1/exercises",
-#   params={"type": "strength",
-#           "muscle": "abdominals",
-#           "difficulty": "intermediate"},
-#   headers={'X-Api-Key': os.environ.get("EXERCISE_API_KEY")}
-#   )
-#   exercises_response = []
-#   for item in response.json():
-#     exercises_response.append(
-#       {
-#         'name' : item['name'],
-#         'muscle' : item['muscle'],
-#         'equipment' : item['equipment'],
-#         'difficulty' : item['difficulty']
-#       }
-#     )
-#   for item in exercises_response:
-#     new_exercise = Exercise(
-#       name=item['name'],
-#       muscle=item['muscle'],
-#       equipment=item['equipment'],
-#       difficulty=item['difficulty']
-#     )
-#     db.session.add(new_exercise)
-#     db.session.commit()
-
-#   return "Exercises have been added to the database"
-
-
 
 @exercises_bp.route("", methods=["GET"])
 def get_all_exercises():
@@ -339,8 +328,12 @@ def get_all_exercises():
     )
   return exercises_response
 
-@exercises_bp.route("/<exercise_id>", methods=["GET"])
-def get_one_exercise(exercise_id):
-  exercise = validate_models(Exercise, exercise_id)
+@exercises_bp.route("/<name>", methods=["GET"])
+def get_one_exercise(name):
+  exercises = Exercise.query.all()
+  for exercise in exercises:
+    if exercise.name == name:
+      return {
+        "exercise data" : exercise.completed_at
+      }
 
-  return jsonify(exercise.to_dict())
